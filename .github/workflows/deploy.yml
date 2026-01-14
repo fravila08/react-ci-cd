@@ -1,0 +1,35 @@
+name: Deploy to Github Pages
+
+on:
+  workflow_run: 
+    workflows: ["Running Cypress"]
+    branches: ["main"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: build dist dir
+        run: npm run build
+
+      - name: deploy with GH Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.email "fr4v1l4@gmail.com"
+          git config --global user.name "fravila08"
+          REPO="https://x-access-token:${GITHUB_TOKEN}@github.com/fravila08/react-ci-cd.git"
+          npx gh-pages -d dist -r $REPO
